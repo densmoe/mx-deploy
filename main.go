@@ -5,6 +5,8 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	buildapi "github.com/densmoe/mx-deploy/build_api"
+	"github.com/densmoe/mx-deploy/cmd"
+	configuration "github.com/densmoe/mx-deploy/configuration"
 	deployapi "github.com/densmoe/mx-deploy/deploy_api"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -20,20 +22,19 @@ type Config struct {
 }
 
 var config Config
+var Client deployapi.DeployAPI
 
 func main() {
-	fmt.Printf("Hello")
-	log.Info("dd")
-
+	// log.SetFormatter(&log.JSONFormatter{PrettyPrint: true})
 	// Load .env in current path if available
 	if err := godotenv.Load(); err != nil {
 		log.Info("No .env file found")
 	}
 
-	if err := env.Parse(&config); err != nil {
+	if err := env.Parse(&configuration.CurrentConfig); err != nil {
 		fmt.Printf("%+v\n", err)
 	}
-	fmt.Printf("%+v\n", config)
+	// fmt.Printf("%+v\n", config)
 
 	deployapi := deployapi.DeployAPI{
 		BaseURL:   config.DeployAPIBaseURL,
@@ -69,4 +70,5 @@ func main() {
 
 	rev := buildapi.GetRevisionFromPackage(lastPackage)
 	log.Info(rev)
+	cmd.Execute()
 }
