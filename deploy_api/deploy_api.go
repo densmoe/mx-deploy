@@ -27,9 +27,7 @@ func (d DeployAPI) RetrieveApps() []App {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Mendix-Username", d.Username)
 	req.Header.Set("Mendix-ApiKey", d.APIKey)
-	response, err := client.Do(req)
-	log.Info(response.Body)
-	log.Info(err)
+	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
 
 	var apps []App
@@ -37,4 +35,20 @@ func (d DeployAPI) RetrieveApps() []App {
 		log.Error(err)
 	}
 	return apps
+}
+
+func (d DeployAPI) RetrieveApp(appId string) App {
+	client := http.Client{}
+	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Mendix-Username", d.Username)
+	req.Header.Set("Mendix-ApiKey", d.APIKey)
+	response, _ := client.Do(req)
+	jsonDataFromResp, _ := io.ReadAll(response.Body)
+
+	var app App
+	if err := json.Unmarshal([]byte(jsonDataFromResp), &app); err != nil {
+		log.Error(err)
+	}
+	return app
 }
