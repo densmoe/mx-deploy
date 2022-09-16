@@ -88,14 +88,12 @@ func (d DeployAPI) RetrieveApp() App {
 		log.Error(err)
 	}
 	return app
- }
+}
 
-func (d DeployAPI) RetrieveApp(appId string) App {
+func (d DeployAPI) RetrieveApp2(appId string) App {
 	client := http.Client{}
 	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId, nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Mendix-Username", d.Username)
-	req.Header.Set("Mendix-ApiKey", d.APIKey)
+	d.SetRequestHeaders(*req)
 	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
 
