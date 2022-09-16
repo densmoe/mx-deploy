@@ -9,9 +9,11 @@ import (
 )
 
 type DeployAPI struct {
-	BaseURL  string
-	Username string
-	APIKey   string
+	BaseURL   string
+	Username  string
+	APIKey    string
+	AppID     string
+	ProjectID string
 }
 
 type App struct {
@@ -21,12 +23,16 @@ type App struct {
 	AppId     string `json:"AppId"`
 }
 
-func (d DeployAPI) RetrieveApps() []App {
-	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps", nil)
+func (d DeployAPI) SetRequestHeaders(req http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Mendix-Username", d.Username)
 	req.Header.Set("Mendix-ApiKey", d.APIKey)
+}
+
+func (d DeployAPI) RetrieveApps() []App {
+	client := http.Client{}
+	req, _ := http.NewRequest("GET", d.BaseURL+"/apps", nil)
+	d.SetRequestHeaders(*req)
 	response, err := client.Do(req)
 	log.Info(response.Body)
 	log.Info(err)
@@ -37,4 +43,41 @@ func (d DeployAPI) RetrieveApps() []App {
 		log.Error(err)
 	}
 	return apps
+}
+
+func (d DeployAPI) GetAppIdForProjectId(projectId string) string {
+	var appId string
+	apps := d.RetrieveApps()
+
+	for _, app := range apps {
+
+		if app.ProjectId == d.ProjectID {
+			appId = app.AppId
+			break
+		}
+	}
+
+	return appId
+}
+
+func (d *DeployAPI) SetAppIdForProjectId(projectId string) {
+	// This sets the DeployAPI.AppID for a given ProjectID
+	appId := d.GetAppIdForProjectId(d.ProjectID)
+	d.AppID = appId
+}
+
+func (d DeployAPI) RetrieveApp() App {
+	client := http.Client{}
+	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+d.AppID, nil)
+	d.SetRequestHeaders(*req)
+	response, err := client.Do(req)
+	log.Info(response.Body)
+	log.Info(err)
+	jsonDataFromResp, _ := io.ReadAll(response.Body)
+
+	var app App
+	if err := json.Unmarshal([]byte(jsonDataFromResp), &app); err != nil {
+		log.Error(err)
+	}
+	return app
 }
