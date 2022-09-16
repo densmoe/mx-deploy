@@ -23,12 +23,6 @@ type App struct {
 	AppId     string `json:"AppId"`
 }
 
-func (d DeployAPI) SetRequestHeaders(req http.Request) {
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Mendix-Username", d.Username)
-	req.Header.Set("Mendix-ApiKey", d.APIKey)
-}
-
 type Environment struct {
 	Status        string `json:"Status"`
 	EnvironmentId string `json:"EnvironmentId"`
@@ -37,6 +31,12 @@ type Environment struct {
 	ModelVersion  string `json:"ModelVersion"`
 	MendixVersion string `json:"MendixVersion"`
 	IsProduction  bool   `json:"Production"`
+}
+
+func (d DeployAPI) SetRequestHeaders(req http.Request) {
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Mendix-Username", d.Username)
+	req.Header.Set("Mendix-ApiKey", d.APIKey)
 }
 
 func (d DeployAPI) RetrieveApps() []App {
