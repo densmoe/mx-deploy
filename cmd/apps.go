@@ -34,7 +34,7 @@ var appsInfoCmd = &cobra.Command{
 			Username: configuration.CurrentConfig.DeployAPIUsername,
 			APIKey:   configuration.CurrentConfig.DeployAPIKey,
 		}
-		apps := d.RetrieveApp2(args[0])
+		apps := d.RetrieveApp(args[0])
 		out, _ := json.MarshalIndent(apps, "", "  ")
 		println(string(out))
 	},

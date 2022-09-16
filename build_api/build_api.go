@@ -35,13 +35,11 @@ func (b BuildAPI) SetRequestHeaders(req http.Request) {
 	req.Header.Set("Mendix-ApiKey", b.APIKey)
 }
 
-func (b BuildAPI) RetrievePackages() []Package {
+func (b BuildAPI) RetrievePackages(appId string) []Package {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", b.BaseURL+"/apps/"+b.AppID+"/packages", nil)
+	req, _ := http.NewRequest("GET", b.BaseURL+"/apps/"+appId+"/packages", nil)
 	b.SetRequestHeaders(*req)
-	response, err := client.Do(req)
-	log.Info(response.Body)
-	log.Info(err)
+	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
 
 	var packages []Package
@@ -51,8 +49,8 @@ func (b BuildAPI) RetrievePackages() []Package {
 	return packages
 }
 
-func (b BuildAPI) GetLatestPackage() Package {
-	packages := b.RetrievePackages()
+func (b BuildAPI) GetLatestPackage(appId string) Package {
+	packages := b.RetrievePackages(appId)
 	sort.Slice(packages, func(i, j int) bool {
 		return packages[i].CreationDate > packages[j].CreationDate
 	})

@@ -74,9 +74,9 @@ func (d *DeployAPI) SetAppIdForProjectId(projectId string) {
 	d.AppID = appId
 }
 
-func (d DeployAPI) RetrieveApp() App {
+func (d DeployAPI) RetrieveApp(appId string) App {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+d.AppID, nil)
+	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId, nil)
 	d.SetRequestHeaders(*req)
 	response, err := client.Do(req)
 	log.Info(response.Body)
@@ -90,26 +90,10 @@ func (d DeployAPI) RetrieveApp() App {
 	return app
 }
 
-func (d DeployAPI) RetrieveApp2(appId string) App {
-	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId, nil)
-	d.SetRequestHeaders(*req)
-	response, _ := client.Do(req)
-	jsonDataFromResp, _ := io.ReadAll(response.Body)
-
-	var app App
-	if err := json.Unmarshal([]byte(jsonDataFromResp), &app); err != nil {
-		log.Error(err)
-	}
-	return app
-}
-
 func (d DeployAPI) RetrieveEnvironments(appId string) []Environment {
 	client := http.Client{}
 	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId+"/environments", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Mendix-Username", d.Username)
-	req.Header.Set("Mendix-ApiKey", d.APIKey)
+	d.SetRequestHeaders(*req)
 	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
 
