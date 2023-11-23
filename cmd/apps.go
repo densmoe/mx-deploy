@@ -5,6 +5,7 @@ import (
 
 	"github.com/densmoe/mx-deploy/configuration"
 	deployapi "github.com/densmoe/mx-deploy/deploy_api"
+	deployapiv4 "github.com/densmoe/mx-deploy/deploy_api_v4"
 	"github.com/spf13/cobra"
 )
 
@@ -12,6 +13,7 @@ func init() {
 	rootCmd.AddCommand(appsCmd)
 	appsCmd.AddCommand(appsLsCmd)
 	appsCmd.AddCommand(appsInfoCmd)
+	appsCmd.AddCommand(licensedAppsLsCmd)
 }
 
 var appsCmd = &cobra.Command{
@@ -30,7 +32,6 @@ var appsInfoCmd = &cobra.Command{
 	Args:  cobra.MatchAll(cobra.ExactArgs(1)),
 	Run: func(cmd *cobra.Command, args []string) {
 		d := deployapi.DeployAPI{
-			BaseURL:  configuration.CurrentConfig.DeployAPIBaseURL,
 			Username: configuration.CurrentConfig.DeployAPIUsername,
 			APIKey:   configuration.CurrentConfig.DeployAPIKey,
 		}
@@ -46,11 +47,24 @@ var appsLsCmd = &cobra.Command{
 	Long:  `Retrieves a list of all apps that can be accessed with the credentials.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		d := deployapi.DeployAPI{
-			BaseURL:  configuration.CurrentConfig.DeployAPIBaseURL,
 			Username: configuration.CurrentConfig.DeployAPIUsername,
 			APIKey:   configuration.CurrentConfig.DeployAPIKey,
 		}
 		apps := d.RetrieveApps()
+		out, _ := json.MarshalIndent(apps, "", "  ")
+		println(string(out))
+	},
+}
+
+var licensedAppsLsCmd = &cobra.Command{
+	Use:   "licensed-ls",
+	Short: "Retrieves list of apps",
+	Long:  `Retrieves a list of all apps that can be accessed with the credentials.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		d := deployapiv4.DeployAPIv4{
+			PAT: configuration.CurrentConfig.ExpPAT,
+		}
+		apps := d.GetLicensedApps()
 		out, _ := json.MarshalIndent(apps, "", "  ")
 		println(string(out))
 	},

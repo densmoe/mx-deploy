@@ -2,14 +2,16 @@ package deployapi
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
 
+const BaseURL = "https://deploy.mendix.com/api/1"
+
 type DeployAPI struct {
-	BaseURL   string
 	Username  string
 	APIKey    string
 	AppID     string
@@ -41,7 +43,7 @@ func (d DeployAPI) SetRequestHeaders(req http.Request) {
 
 func (d DeployAPI) RetrieveApps() []App {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps", nil)
+	req, _ := http.NewRequest("GET", BaseURL+"/apps", nil)
 	d.SetRequestHeaders(*req)
 	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
@@ -76,7 +78,7 @@ func (d *DeployAPI) SetAppIdForProjectId(projectId string) {
 
 func (d DeployAPI) RetrieveApp(appId string) App {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId, nil)
+	req, _ := http.NewRequest("GET", BaseURL+"/apps/"+appId, nil)
 	d.SetRequestHeaders(*req)
 	response, err := client.Do(req)
 	log.Info(response.Body)
@@ -92,14 +94,29 @@ func (d DeployAPI) RetrieveApp(appId string) App {
 
 func (d DeployAPI) RetrieveEnvironments(appId string) []Environment {
 	client := http.Client{}
-	req, _ := http.NewRequest("GET", d.BaseURL+"/apps/"+appId+"/environments", nil)
+	url := fmt.Sprintf("%s/apps/%s/environments", BaseURL, appId)
+	req, _ := http.NewRequest("GET", url, nil)
 	d.SetRequestHeaders(*req)
 	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
-
 	var environments []Environment
 	if err := json.Unmarshal([]byte(jsonDataFromResp), &environments); err != nil {
 		log.Error(err)
 	}
 	return environments
+}
+
+func (d DeployAPI) RetrieveEnvironment(appId string, mode string) Environment {
+	client := http.Client{}
+	url := fmt.Sprintf("%s/apps/%s/environments/%s", BaseURL, appId, mode)
+	req, _ := http.NewRequest("GET", url, nil)
+	d.SetRequestHeaders(*req)
+	response, _ := client.Do(req)
+	jsonDataFromResp, _ := io.ReadAll(response.Body)
+	log.Info(string(jsonDataFromResp))
+	var environment Environment
+	if err := json.Unmarshal([]byte(jsonDataFromResp), &environment); err != nil {
+		log.Error(err)
+	}
+	return environment
 }
