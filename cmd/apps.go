@@ -62,7 +62,7 @@ var licensedAppsLsCmd = &cobra.Command{
 	Long:  `Retrieves a list of all apps that can be accessed with the credentials.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		d := deployapiv4.DeployAPIv4{
-			PAT: configuration.CurrentConfig.ExpPAT,
+			PAT: configuration.CurrentConfig.PAT,
 		}
 		apps := d.GetLicensedApps()
 		out, _ := json.MarshalIndent(apps, "", "  ")
