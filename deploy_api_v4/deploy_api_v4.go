@@ -45,6 +45,13 @@ type PatchPermissionsBody struct {
 	Permissions []PermissionSet `json:"permissions"`
 }
 
+// PatchTechnicalContactBody represents the structure of the PATCH request body {
+type PatchTechnicalContactBody struct {
+	TechnicalContact struct {
+		UserID string `json:"userId"`
+	} `json:"technicalContact"`
+}
+
 // AppResponse represents the structure of the JSON response
 type GetAppsResponse struct {
 	Apps       []App `json:"apps"`
@@ -270,4 +277,35 @@ func (d DeployAPIv4) SetUserPermissionsForEnvironment(appId string, environmentI
 		return PatchPermissionsBody{}
 	}
 	return apiResponse
+}
+
+func (d DeployAPIv4) PatchTechnicalContact(appId string, userId string) {
+	client := http.Client{}
+	url := fmt.Sprintf("%s/apps/%s", BaseURL, appId)
+	fmt.Println(url)
+	// Create the PATCH request body
+	patchRequestBody := PatchTechnicalContactBody{
+		TechnicalContact: struct {
+			UserID string `json:"userId"`
+		}{
+			UserID: userId,
+		},
+	}
+
+	// Convert the PATCH request body to JSON
+	patchRequestBodyJSON, err := json.Marshal(patchRequestBody)
+	if err != nil {
+		fmt.Println("Error encoding JSON:", err)
+		return
+	}
+
+	req, _ := http.NewRequest("PATCH", url, bytes.NewBuffer(patchRequestBodyJSON))
+	d.SetRequestHeaders(*req)
+	response, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error making request:", err)
+		return
+	}
+	defer response.Body.Close()
+	fmt.Println(response.Status)
 }

@@ -71,6 +71,22 @@ var environmentsInfoCmd = &cobra.Command{
 	},
 }
 
+var environmentsGetConstantsCmd = &cobra.Command{
+	Use:   "get-constants",
+	Short: "Retrieves constants of an environment",
+	Long:  `Retrieves constants of an environment`,
+	Args:  cobra.MatchAll(cobra.ExactArgs(2)),
+	Run: func(cmd *cobra.Command, args []string) {
+		d := deployapi.DeployAPI{
+			Username: configuration.CurrentConfig.DeployAPIUsername,
+			APIKey:   configuration.CurrentConfig.DeployAPIKey,
+		}
+		constants, _, _, _ := d.GetEnvironmentSettings(args[0], args[1])
+		out, _ := json.MarshalIndent(constants, "", "  ")
+		println(string(out))
+	},
+}
+
 var environmentsGetUserPermissionsCmd = &cobra.Command{
 	Use:   "get-permissions",
 	Short: "Retrieves permisions of a sincle user in an environment",

@@ -14,6 +14,7 @@ func init() {
 	appsCmd.AddCommand(appsLsCmd)
 	appsCmd.AddCommand(appsInfoCmd)
 	appsCmd.AddCommand(licensedAppsLsCmd)
+	appsCmd.AddCommand(appsUpdateTechicalContact)
 }
 
 var appsCmd = &cobra.Command{
@@ -67,5 +68,18 @@ var licensedAppsLsCmd = &cobra.Command{
 		apps := d.GetLicensedApps()
 		out, _ := json.MarshalIndent(apps, "", "  ")
 		println(string(out))
+	},
+}
+
+var appsUpdateTechicalContact = &cobra.Command{
+	Use:   "update-technical-contact",
+	Short: "Update the technical contact for an app",
+	Long:  "Update the technical contact for an app",
+	Args:  cobra.MatchAll(cobra.ExactArgs(2)),
+	Run: func(cmd *cobra.Command, args []string) {
+		d := deployapiv4.DeployAPIv4{
+			PAT: configuration.CurrentConfig.PAT,
+		}
+		d.PatchTechnicalContact(args[0], args[1])
 	},
 }

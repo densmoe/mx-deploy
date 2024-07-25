@@ -1,7 +1,9 @@
 package deployapi
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,10 +14,8 @@ import (
 const BaseURL = "https://deploy.mendix.com/api/1"
 
 type DeployAPI struct {
-	Username  string
-	APIKey    string
-	AppID     string
-	ProjectID string
+	Username string
+	APIKey   string
 }
 
 type App struct {
@@ -53,27 +53,6 @@ func (d DeployAPI) RetrieveApps() []App {
 		log.Error(err)
 	}
 	return apps
-}
-
-func (d DeployAPI) GetAppIdForProjectId(projectId string) string {
-	var appId string
-	apps := d.RetrieveApps()
-
-	for _, app := range apps {
-
-		if app.ProjectId == d.ProjectID {
-			appId = app.AppId
-			break
-		}
-	}
-
-	return appId
-}
-
-func (d *DeployAPI) SetAppIdForProjectId(projectId string) {
-	// This sets the DeployAPI.AppID for a given ProjectID
-	appId := d.GetAppIdForProjectId(d.ProjectID)
-	d.AppID = appId
 }
 
 func (d DeployAPI) RetrieveApp(appId string) App {
@@ -119,4 +98,75 @@ func (d DeployAPI) RetrieveEnvironment(appId string, mode string) Environment {
 		log.Error(err)
 	}
 	return environment
+}
+
+func (d DeployAPI) GetEnvironmentSettings(appId string, environmentId string) ([]Constant, []CustomSetting, []ScheduledEvent, error) {
+	client := http.Client{}
+	url := fmt.Sprintf("%s/apps/%s/environments/%s/settings", BaseURL, appId, environmentId)
+	req, _ := http.NewRequest("GET", url, nil)
+	d.SetRequestHeaders(*req)
+	response, err := client.Do(req)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	defer response.Body.Close()
+
+	var settings EnvironmentSettings
+	err = json.NewDecoder(response.Body).Decode(&settings)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return settings.Constants, settings.CustomSettings, settings.ScheduledEvents, nil
+}
+
+func (d DeployAPI) SetEnvironmentSettings(appId string, environmentId string, constants []Constant, customSettings []CustomSetting, scheduledEvents []ScheduledEvent) error {
+	client := http.Client{}
+	url := fmt.Sprintf("%s/apps/%s/environments/%s/settings", BaseURL, appId, environmentId)
+	reqBody := EnvironmentSettings{
+		Constants:       constants,
+		CustomSettings:  customSettings,
+		ScheduledEvents: scheduledEvents,
+	}
+	reqBodyBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return err
+	}
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(reqBodyBytes))
+	d.SetRequestHeaders(*req)
+	response, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	if response.StatusCode != http.StatusOK {
+		return errors.New("failed to set environment settings")
+	}
+	defer response.Body.Close()
+	return nil
+}
+
+type Constant struct {
+	Name          string `json:"Name"`
+	DataType      string `json:"DataType"`
+	Value         string `json:"Value"`
+	DeployedValue string `json:"DeployedValue"`
+}
+
+type CustomSetting struct {
+	Name          string `json:"Name"`
+	DataType      string `json:"DataType"`
+	Value         string `json:"Value"`
+	DeployedValue string `json:"DeployedValue"`
+}
+
+type ScheduledEvent struct {
+	Name          string `json:"Name"`
+	DeployedValue string `json:"DeployedValue"`
+	Value         string `json:"Value"`
+}
+
+type EnvironmentSettings struct {
+	Constants       []Constant       `json:"Constants"`
+	CustomSettings  []CustomSetting  `json:"CustomSettings"`
+	ScheduledEvents []ScheduledEvent `json:"ScheduledEvents"`
 }
