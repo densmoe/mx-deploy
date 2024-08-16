@@ -138,11 +138,11 @@ func (d DeployAPIv4) GetLicensedApps() []App {
 			return []App{}
 		}
 		defer response.Body.Close()
-		fmt.Println(response.Status)
+		// fmt.Println(response.Status)
 
 		// Read the response body
 		body, err := io.ReadAll(response.Body)
-		fmt.Println(string(body))
+		// fmt.Println(string(body))
 		if err != nil {
 			fmt.Println("Error reading response body:", err)
 			return []App{}

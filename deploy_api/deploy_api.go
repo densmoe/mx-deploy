@@ -79,7 +79,8 @@ func (d DeployAPI) RetrieveEnvironments(appId string) []Environment {
 	response, _ := client.Do(req)
 	jsonDataFromResp, _ := io.ReadAll(response.Body)
 	var environments []Environment
-	if err := json.Unmarshal([]byte(jsonDataFromResp), &environments); err != nil {
+	err := json.Unmarshal([]byte(jsonDataFromResp), &environments)
+	if err != nil {
 		log.Error(err)
 	}
 	return environments
@@ -106,7 +107,9 @@ func (d DeployAPI) GetEnvironmentSettings(appId string, environmentId string) ([
 	req, _ := http.NewRequest("GET", url, nil)
 	d.SetRequestHeaders(*req)
 	response, err := client.Do(req)
+	// log.Info(response.StatusCode)
 	if err != nil {
+		log.Info(response.StatusCode)
 		return nil, nil, nil, err
 	}
 	defer response.Body.Close()
@@ -141,6 +144,7 @@ func (d DeployAPI) SetEnvironmentSettings(appId string, environmentId string, co
 	if response.StatusCode != http.StatusOK {
 		return errors.New("failed to set environment settings")
 	}
+	println(response.Status)
 	defer response.Body.Close()
 	return nil
 }

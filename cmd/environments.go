@@ -22,6 +22,7 @@ func init() {
 	environmentsCmd.AddCommand(environmentsInfoCmd)
 	environmentsCmd.AddCommand(environmentsGetUserPermissionsCmd)
 	environmentsCmd.AddCommand(environmentsSetUserPermissionsCmd)
+	environmentsCmd.AddCommand(environmentsGetConstantsCmd)
 	environmentsSetUserPermissionsCmd.Flags().BoolVar(&canDeploy, "canDeploy", false, "Set the canDeploy permission")
 	environmentsSetUserPermissionsCmd.Flags().BoolVar(&canManageBackups, "canManageBackups", false, "Set the canManageBackups permission")
 	environmentsSetUserPermissionsCmd.Flags().BoolVar(&canViewAlerts, "canViewAlerts", false, "Set the canViewAlerts permission")
